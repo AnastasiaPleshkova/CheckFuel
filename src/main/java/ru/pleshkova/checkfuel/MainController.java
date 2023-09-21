@@ -129,6 +129,8 @@ public class MainController {
 
     @FXML
     void showArсhive(ActionEvent event) {
+        JavaToMySql.connectionToBD();
+
         errorLabel.setVisible(false);
         arhiveShowArea.setVisible(true);
 
