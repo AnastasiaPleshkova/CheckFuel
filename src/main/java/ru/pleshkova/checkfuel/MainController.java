@@ -6,6 +6,7 @@ package ru.pleshkova.checkfuel;
 
 import java.io.*;
 import java.net.URL;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -24,40 +25,28 @@ public class MainController {
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
-
     @FXML // URL location of the FXML file that was given to the FXMLLoader
     private URL location;
-
     @FXML // fx:id="arhiveShowArea"
     private TextArea arhiveShowArea; // Value injected by FXMLLoader
-
     @FXML // fx:id="calculateButton"
     private Button calculateButton; // Value injected by FXMLLoader
-
     @FXML // fx:id="enteredCompData"
     private TextField enteredCompData; // Value injected by FXMLLoader
-
     @FXML // fx:id="errorLabel"
     private Label errorLabel; // Value injected by FXMLLoader
-
     @FXML // fx:id="nowKmData"
     private TextField nowKmData; // Value injected by FXMLLoader
-
     @FXML // fx:id="nowLitrData"
     private TextField nowLitrData; // Value injected by FXMLLoader
-
     @FXML // fx:id="oldKmLabel"
     private Label oldKmLabel; // Value injected by FXMLLoader
-
     @FXML // fx:id="realKmData"
     private Label realKmData; // Value injected by FXMLLoader
-
     @FXML // fx:id="realKmOnLitresData"
     private Label realKmOnLitresData; // Value injected by FXMLLoader
-
     @FXML // fx:id="saveButton"
     private Button saveButton; // Value injected by FXMLLoader
-
     @FXML // fx:id="showArhiveButton"
     private Button showArhiveButton; // Value injected by FXMLLoader
 
@@ -101,6 +90,8 @@ public class MainController {
         errorLabel.setVisible(false);
         arhiveShowArea.setVisible(false);
         if (canSave){
+            boolean canSaveToBD = new DAO().addedRecord(new Record(Date.valueOf(LocalDate.now()), Double.valueOf(nowKmData.getText()),
+                    Double.valueOf(enteredCompData.getText())));
             try (BufferedWriter rd = new BufferedWriter(new FileWriter(archivePath, true)))
             {
                 StringBuilder result = new StringBuilder("\n" + LocalDate.now() + " Пробег:" + nowKmData.getText()+
@@ -129,7 +120,7 @@ public class MainController {
 
     @FXML
     void showArсhive(ActionEvent event) {
-        JavaToMySql.connectionToBD();
+        boolean resultRecievingFromDB = new DAO().getRecordsFromDB();
 
         errorLabel.setVisible(false);
         arhiveShowArea.setVisible(true);
