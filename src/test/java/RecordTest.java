@@ -14,14 +14,14 @@ public class RecordTest {
 
     @BeforeEach
     void setUp() {
-        list = List.of(new Record(Date.valueOf("12.12.2022"), 12, 1, 12),
-        new Record(Date.valueOf("12.12.2023"), 140, 1, 12),
-        new Record(Date.valueOf("12.11.2023"), 120, 1, 12));
+        list = List.of(new Record(new Date(104,5,17), 12, 1, 12),
+        new Record(new Date(105,6,17), 140, 1, 12),
+        new Record(new Date(105,5,17), 120, 1, 12));
     }
 
     @Test
     public void getLastRecordTest(){
-        assertEquals(new Record(Date.valueOf("12.12.2023"), 140, 1, 12),Record.getLastRecord(list));
+        assertEquals(list.get(1),Record.getLastRecord(list));
     }
 
 }
