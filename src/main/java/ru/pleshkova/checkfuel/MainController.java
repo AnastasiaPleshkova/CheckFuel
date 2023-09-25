@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.URL;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -54,7 +55,12 @@ public class MainController {
     void calculate(MouseEvent event) {
 
         errorLabel.setVisible(false);
-        Integer oldKM = Integer.parseInt(oldKmLabel.getText());
+
+        List<Record> records = DAO.getRecordsFromBD();
+        Record lastRecord = Record.getLastRecord(records);
+        Integer oldKM = lastRecord.getKm();
+        oldKmLabel.setText(String.valueOf(oldKM));
+
         Integer tekKMInt;
         try{
         String tekKMText = nowKmData.getText();
@@ -67,10 +73,11 @@ public class MainController {
         }
         if (oldKM>tekKMInt){
             errorLabel.setVisible(true);
-            errorLabel.setText("Значение текущего пробега не может быть меньше исторического");
+            errorLabel.setText(String.format("Значение текущего пробега не может быть меньше исторического - %d", oldKM));
             return;
         }
-        realKmData.setText(String.valueOf(tekKMInt-oldKM));
+        int passesKM = tekKMInt-oldKM;
+        realKmData.setText(String.valueOf(passesKM));
 
         Double litres;
         try{litres = Double.valueOf(nowLitrData.getText());}
@@ -79,7 +86,8 @@ public class MainController {
             errorLabel.setText("Не смог считать сколько залито литров. Введите число с точкой");
             return;
         }
-        realKmOnLitresData.setText(String.format(Locale.ENGLISH,"%.2f",litres*100/(tekKMInt-oldKM)));
+        String kmOnLitresString = String.format(Locale.ENGLISH,"%.2f",litres*100/(tekKMInt-oldKM));
+        realKmOnLitresData.setText(kmOnLitresString);
         realKmData.setVisible(true);
         realKmOnLitresData.setVisible(true);
         canSave = true;
@@ -90,8 +98,8 @@ public class MainController {
         errorLabel.setVisible(false);
         arhiveShowArea.setVisible(false);
         if (canSave){
-            boolean canSaveToBD = new DAO().addedRecord(new Record(Date.valueOf(LocalDate.now()), Double.valueOf(nowKmData.getText()),
-                    Double.valueOf(enteredCompData.getText())));
+//            boolean canSaveToBD = new DAO().addedRecord(new Record(Date.valueOf(LocalDate.now()), Double.valueOf(nowKmData.getText()),
+//                    Double.valueOf(enteredCompData.getText())));
             try (BufferedWriter rd = new BufferedWriter(new FileWriter(archivePath, true)))
             {
                 StringBuilder result = new StringBuilder("\n" + LocalDate.now() + " Пробег:" + nowKmData.getText()+
@@ -120,50 +128,20 @@ public class MainController {
 
     @FXML
     void showArсhive(ActionEvent event) {
-        boolean resultRecievingFromDB = new DAO().getRecordsFromDB();
-
         errorLabel.setVisible(false);
         arhiveShowArea.setVisible(true);
-
-        try (BufferedReader rd = new BufferedReader(new FileReader(archivePath)))
-        {
-            String line;
-            StringBuilder result = new StringBuilder();
-            while ((line=rd.readLine())!=null) {
-                result.append(line);
-                result.append("\n");
-            }
-            arhiveShowArea.setText(result.toString());
-
-        } catch (IOException e){
-            errorLabel.setVisible(true);
-            errorLabel.setText("Не найден файл с архивом");
-            return;
+        StringBuilder sb = new StringBuilder();
+        for (Record record : DAO.getRecordsFromBD()){
+            sb.append(record.toLine());
         }
+        arhiveShowArea.setText(sb.toString());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         arhiveShowArea.setWrapText(true);
         errorLabel.setWrapText(true); // включить перенос строки
-        Integer oldKM;
-        try (BufferedReader rd = new BufferedReader(new FileReader(archivePath)))
-        {
-            String line;
-            String prevLine = " ";
-            while ((line=rd.readLine())!=null) {
-                prevLine = line;
-            }
-
-            String temp = prevLine.split(":")[1];
-            oldKM = Integer.parseInt(temp.split(" ")[0]);
-
-        } catch (Exception e){
-            oldKM = 0;
-        }
-
-        oldKmLabel.setText(String.valueOf(oldKM));
-
+        oldKmLabel.setText("-");
     }
 
 }
