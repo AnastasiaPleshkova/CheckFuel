@@ -1,5 +1,12 @@
 package ru.pleshkova.checkfuel;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -15,7 +22,24 @@ public class DAO {
         // JDBC URL, username and password of MySQL server
         private static final String url = "jdbc:mysql://localhost:3306/checkfuelchema";
         private static final String user = "root";
-        private static final String password = "nopasswordhere";
+        private static final Path passwordPath = Paths.get("src/main/resources/ru/pleshkova/checkfuel/bd/password.txt");
+        
+        private static final String password = getPassword();
+
+        private static String getPassword() {
+            String password = "";
+            if (Files.exists(passwordPath)) {
+//                try (BufferedReader rd = new BufferedReader(new FileReader(passwordPath))) {
+                try (BufferedReader rd = Files.newBufferedReader(passwordPath)) {
+                    password = rd.readLine();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                System.out.println("File with password not found");
+            }
+            return password;
+        }
 
         // JDBC variables for opening and managing connection
         private static Connection connection;

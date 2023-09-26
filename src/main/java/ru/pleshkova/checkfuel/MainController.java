@@ -20,8 +20,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 
 public class MainController {
-
-    String archivePath = "src/main/resources/ru/pleshkova/checkfuel/archive.txt";
     Boolean canSave = false;
     Record calculatedRecord;
 

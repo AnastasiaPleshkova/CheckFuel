@@ -1,3 +1,4 @@
+src/main/resources/ru/pleshkova/checkfuel/bd/password.txt
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
