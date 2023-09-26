@@ -13,8 +13,8 @@ public class Record {
     public String toLine(){
         return String.format("Дата %s. \nПройдено %s км, \n" +
                 "Использовано %s литров.\n" +
-                "Расход по БК - %s,\n" +
-                "Расход реальный - %s \n", this.date, this.km, this.litres,this.kmOnLitresBK, this.kmOnLitresREAL);
+                "Расход по БК: %s,\n" +
+                "Расход реальный: %s \n", this.date, this.km, this.litres,this.kmOnLitresBK, this.kmOnLitresREAL);
     }
 
 

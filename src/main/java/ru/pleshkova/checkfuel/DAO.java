@@ -23,22 +23,20 @@ public class DAO {
         private static final String url = "jdbc:mysql://localhost:3306/checkfuelchema";
         private static final String user = "root";
         private static final Path passwordPath = Paths.get("src/main/resources/ru/pleshkova/checkfuel/bd/password.txt");
-        
         private static final String password = getPassword();
 
         private static String getPassword() {
-            String password = "";
             if (Files.exists(passwordPath)) {
-//                try (BufferedReader rd = new BufferedReader(new FileReader(passwordPath))) {
                 try (BufferedReader rd = Files.newBufferedReader(passwordPath)) {
-                    password = rd.readLine();
+                    return rd.readLine();
                 } catch (IOException ex) {
+                    System.out.println("Couldn't read file");
                     ex.printStackTrace();
                 }
             } else {
                 System.out.println("File with password not found");
             }
-            return password;
+            return "";
         }
 
         // JDBC variables for opening and managing connection
@@ -73,7 +71,6 @@ public class DAO {
 
             StringBuilder sb = new StringBuilder();
             sb.append("INSERT INTO `checkfuelchema`.`archive_records` (`currentKM`, `date`, `litres`, `kmonlitresBK`, `kmonlitresREAL`) VALUES ('");
-//            sb.append("INSERT archive_records(currentKM, date, litres, kmonlitresBK, kmonlitresREAL) VALUES(");
             sb.append(record.getKm());
             sb.append("', '");
             sb.append(record.getDate());
@@ -110,7 +107,6 @@ public class DAO {
                     Double kmOnLitresREAL = rs.getDouble(6);
 
                     result.add(new Record(date, km, litres, kmOnLitresBK, kmOnLitresREAL));
-                    //System.out.print(result);
                 }
                 return result;
             } catch (SQLException ex) {
@@ -118,7 +114,6 @@ public class DAO {
             } finally {
                 closeConnectionToBD();
             }
-
             return new ArrayList<>();
         }
     }
