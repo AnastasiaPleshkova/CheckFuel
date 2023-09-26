@@ -11,21 +11,23 @@ public class Record {
     private double kmOnLitresREAL;
 
     public String toLine(){
-        return String.format("Дата %s. Пройдено %s км, использовано %s литров. " +
-                "Расход по БК - %s, расход реальный - %s \n", this.date, this.km, this.litres,this.kmOnLitresBK, this.kmOnLitresREAL);
+        return String.format("Дата %s. \nПройдено %s км, \n" +
+                "Использовано %s литров.\n" +
+                "Расход по БК - %s,\n" +
+                "Расход реальный - %s \n", this.date, this.km, this.litres,this.kmOnLitresBK, this.kmOnLitresREAL);
     }
 
 
-    public Record (Date date, int km, double litres, double kmOnLitresBK) {
+    public Record (Date date, int km, double litres, double kmOnLitresREAL) {
         this.date = date;
         this.km = km;
         this.litres = litres;
-        this.kmOnLitresBK = kmOnLitresBK;
+        this.kmOnLitresREAL = kmOnLitresREAL;
     }
 
     public Record (Date date, int km, double litres, double kmOnLitresBK, double kmOnLitresREAL) {
-        this(date, km, litres, kmOnLitresBK);
-        this.kmOnLitresREAL = kmOnLitresREAL;
+        this(date, km, litres, kmOnLitresREAL);
+        this.kmOnLitresBK = kmOnLitresBK;
     }
 
 
@@ -52,7 +54,7 @@ public class Record {
     public static Record getLastRecord(List<Record> list){
         Record lastRecord = list.get(0);
         for (Record record : list) {
-            if (lastRecord.getDate().compareTo(record.getDate())<0){
+            if (lastRecord.getKm() < record.getKm()) {
                 lastRecord = record;
             }
         }

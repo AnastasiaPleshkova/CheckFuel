@@ -22,15 +22,20 @@ public class DAO {
         private static Statement stmt;
         private static ResultSet rs;
 
-        public static ResultSet connectionToBD(String query) {
-
+        public static Statement connectToBD() {
             try {
-                connection = DriverManager.getConnection(url, user, password); // открываем подключение к БД
-                stmt = connection.createStatement(); // создаем объект для совершения запросов
-                rs = stmt.executeQuery(query);
+            connection = DriverManager.getConnection(url, user, password); // открываем подключение к БД
+            stmt = connection.createStatement(); // создаем объект для совершения запросов
             } catch (SQLException sqlEx) {
-                sqlEx.printStackTrace();
+            sqlEx.printStackTrace();
             }
+            return stmt;
+        }
+
+        public static ResultSet getRSfromBD(String query) {
+            try {
+                rs = connectToBD().executeQuery(query);
+            } catch (SQLException sqlEx) { sqlEx.printStackTrace(); }
             return rs;
         }
 
@@ -43,19 +48,35 @@ public class DAO {
         public boolean addedRecord(Record record) {
 
             StringBuilder sb = new StringBuilder();
-            sb.append("INSERT archive_records(currentKM, date, litres, kmonlitresBK, kmonlitresREAL) VALUES(");
+            sb.append("INSERT INTO `checkfuelchema`.`archive_records` (`currentKM`, `date`, `litres`, `kmonlitresBK`, `kmonlitresREAL`) VALUES ('");
+//            sb.append("INSERT archive_records(currentKM, date, litres, kmonlitresBK, kmonlitresREAL) VALUES(");
+            sb.append(record.getKm());
+            sb.append("', '");
             sb.append(record.getDate());
-            sb.append(")");
+            System.out.println(record.getDate());
+            sb.append("', '");
+            sb.append(record.getLitres());
+            sb.append("', '");
+            sb.append(record.getKmOnLitresBK());
+            sb.append("', '");
+            sb.append(record.getKmOnLitresREAL());
+            sb.append("');");
 
-            rs = connectionToBD(sb.toString());
+            System.out.println(sb.toString());
+
+            try {
+            connectToBD().executeUpdate(sb.toString());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                return false;
+            }
             closeConnectionToBD();
-            return false;
-
+            return true;
         }
 
         public static List<Record> getRecordsFromBD() {
             try {
-                ResultSet resultSet = connectionToBD("SELECT * FROM archive_records");
+                ResultSet resultSet = getRSfromBD("SELECT * FROM archive_records");
                 List<Record> result = new ArrayList<>();
                 while (rs.next()) {
                     int km = rs.getInt(2);

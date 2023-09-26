@@ -23,6 +23,7 @@ public class MainController {
 
     String archivePath = "src/main/resources/ru/pleshkova/checkfuel/archive.txt";
     Boolean canSave = false;
+    Record calculatedRecord;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -62,7 +63,7 @@ public class MainController {
         oldKmLabel.setText(String.valueOf(oldKM));
 
         Integer tekKMInt;
-        try{
+        try {
         String tekKMText = nowKmData.getText();
         tekKMInt = Integer.parseInt(tekKMText);
         }
@@ -71,7 +72,7 @@ public class MainController {
             errorLabel.setText("Не смог считать текущий пробег. Введите целое число");
             return;
         }
-        if (oldKM>tekKMInt){
+        if (oldKM>tekKMInt) {
             errorLabel.setVisible(true);
             errorLabel.setText(String.format("Значение текущего пробега не может быть меньше исторического - %d", oldKM));
             return;
@@ -80,8 +81,9 @@ public class MainController {
         realKmData.setText(String.valueOf(passesKM));
 
         Double litres;
-        try{litres = Double.valueOf(nowLitrData.getText());}
-        catch (NumberFormatException e){
+        try {
+            litres = Double.valueOf(nowLitrData.getText());
+        } catch (NumberFormatException e){
             errorLabel.setVisible(true);
             errorLabel.setText("Не смог считать сколько залито литров. Введите число с точкой");
             return;
@@ -91,39 +93,57 @@ public class MainController {
         realKmData.setVisible(true);
         realKmOnLitresData.setVisible(true);
         canSave = true;
+
+        String kmOnLitresBKString = enteredCompData.getText();
+
+        if (kmOnLitresBKString == null || kmOnLitresBKString.isEmpty()) {
+            calculatedRecord = new Record(new Date(LocalDate.now().getYear() - 1900, LocalDate.now().getMonthValue() - 1,
+                    LocalDate.now().getDayOfMonth()), tekKMInt, litres, Double.valueOf(kmOnLitresString));
+        } else {
+            calculatedRecord = new Record(new Date(LocalDate.now().getYear() - 1900, LocalDate.now().getMonthValue() - 1,
+                    LocalDate.now().getDayOfMonth()), tekKMInt, litres, Double.valueOf(kmOnLitresBKString),
+                    Double.valueOf(kmOnLitresString));
+        }
+
     }
 
     @FXML
     void saveToArсhive(ActionEvent event) {
-        errorLabel.setVisible(false);
-        arhiveShowArea.setVisible(false);
-        if (canSave){
-//            boolean canSaveToBD = new DAO().addedRecord(new Record(Date.valueOf(LocalDate.now()), Double.valueOf(nowKmData.getText()),
-//                    Double.valueOf(enteredCompData.getText())));
-            try (BufferedWriter rd = new BufferedWriter(new FileWriter(archivePath, true)))
-            {
-                StringBuilder result = new StringBuilder("\n" + LocalDate.now() + " Пробег:" + nowKmData.getText()+
-                    " Реальный расход:" + realKmOnLitresData.getText() + " Расход по БК:" + enteredCompData.getText());
-                rd.write(result.toString());
+        errorLabel.setVisible(true);
+
+        if (canSave) {
+            try {
+                if ((calculatedRecord.getKm() == Integer.parseInt(nowKmData.getText())) &&
+                        (Math.abs(calculatedRecord.getLitres() - Double.valueOf(nowLitrData.getText())) < 0.01)) {
+                    if (new DAO().addedRecord(calculatedRecord)) {
+                        errorLabel.setText("Save successful");
+                    } else {
+                        errorLabel.setText("Save not successful");
+                    }
+                } else {
+                    errorLabel.setText("Кажется изменились данные. Проведите заново расчет");
+                    return;
+                }
             }
-            catch (IOException e){
+            catch (Exception e){
                 errorLabel.setVisible(true);
-                errorLabel.setText("Не смог найти файл с архивом. Данные не сохранены");
+                errorLabel.setText("Something wrong");
+                e.printStackTrace();
                 return;
             }
         } else {
-            errorLabel.setVisible(true);
-            errorLabel.setText("Введите вначале данные для сохранения");
+            errorLabel.setText("Рассчитайте данные для сохранения");
             return;
         }
 
-        oldKmLabel.setText(nowKmData.getText());
+        oldKmLabel.setText("-");
         nowKmData.setText("");
         nowLitrData.setText("");
         enteredCompData.setText("");
         realKmData.setVisible(false);
         realKmOnLitresData.setVisible(false);
         canSave = false;
+        calculatedRecord = null;
     }
 
     @FXML
@@ -133,6 +153,7 @@ public class MainController {
         StringBuilder sb = new StringBuilder();
         for (Record record : DAO.getRecordsFromBD()){
             sb.append(record.toLine());
+            sb.append("\n");
         }
         arhiveShowArea.setText(sb.toString());
     }
