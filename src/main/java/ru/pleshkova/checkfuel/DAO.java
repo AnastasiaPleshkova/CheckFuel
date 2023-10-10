@@ -7,11 +7,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,37 +57,19 @@ public class DAO {
             return rs;
         }
 
-        public static void closeConnectionToBD(){
-            try { connection.close(); } catch (SQLException se) { /*can't do anything */ }
-            try { stmt.close(); } catch (SQLException se) { /*can't do anything */ }
-            try { rs.close();} catch (SQLException se) { }
-        }
-
         public boolean addedRecord(Record record) {
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("INSERT INTO `checkfuelchema`.`archive_records` (`currentKM`, `date`, `litres`, `kmonlitresBK`, `kmonlitresREAL`) VALUES ('");
-            sb.append(record.getKm());
-            sb.append("', '");
-            sb.append(record.getDate());
-            System.out.println(record.getDate());
-            sb.append("', '");
-            sb.append(record.getLitres());
-            sb.append("', '");
-            sb.append(record.getKmOnLitresBK());
-            sb.append("', '");
-            sb.append(record.getKmOnLitresREAL());
-            sb.append("');");
-
-            System.out.println(sb.toString());
-
             try {
-            connectToBD().executeUpdate(sb.toString());
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                return false;
+                PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `checkfuelchema`.`archive_records` " +
+                        "(`currentKM`, `date`, `litres`, `kmonlitresBK`, `kmonlitresREAL`) VALUES (?, ?, ?, ?, ?)");
+                preparedStatement.setInt(1,record.getKm());
+                preparedStatement.setDate(2, new java.sql.Date(record.getDate().getTime()));
+                preparedStatement.setDouble(3,record.getLitres());
+                preparedStatement.setDouble(4, record.getKmOnLitresBK());
+                preparedStatement.setDouble(5, record.getKmOnLitresREAL());
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-            closeConnectionToBD();
             return true;
         }
 
@@ -111,8 +89,6 @@ public class DAO {
                 return result;
             } catch (SQLException ex) {
                 ex.printStackTrace();
-            } finally {
-                closeConnectionToBD();
             }
             return new ArrayList<>();
         }
